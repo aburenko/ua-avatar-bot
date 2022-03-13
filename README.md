@@ -1,0 +1,1 @@
+ua-avatar-bot
