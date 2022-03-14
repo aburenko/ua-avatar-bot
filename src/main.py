@@ -15,9 +15,6 @@ ukrainian_flag: Final[str] = "./resources/ukrainian_flag.png"
 payment_infos: Final[str] = "./resources/payment.txt"
 
 logging.basicConfig(filename="bot.log",
-                    filemode='a',
-                    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-                    datefmt='%H:%M:%S',
                     level=logging.INFO)
 
 with open(payment_infos, 'r') as payment_file:
@@ -55,6 +52,7 @@ def uaficy_img(update: Update, context: CallbackContext):
     logging.info(update.effective_chat)
     overlay_path, output_path, chat_id = get_overlay_path(update)
     get_biggest_image(update, context, overlay_path)
+    uaficy(update, context, overlay_path, output_path, chat_id)
 
 
 def uaficy(update, context, overlay_path, output_path, chat_id):
