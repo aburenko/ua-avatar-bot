@@ -4,12 +4,12 @@ from telegram.ext.callbackcontext import CallbackContext
 from telegram.ext.commandhandler import CommandHandler
 from telegram.ext.messagehandler import MessageHandler
 from telegram.ext.filters import Filters
+from typing import Final
 
 import pathlib
 import logging
-from typing import Final
-
 import image_util
+import imghdr
 
 ukrainian_flag: Final[str] = "./resources/ukrainian_flag.png"
 payment_infos: Final[str] = "./resources/payment.txt"
@@ -19,6 +19,9 @@ logging.basicConfig(filename="bot.log",
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S',
                     level=logging.INFO)
+
+with open(payment_infos, 'r') as payment_file:
+    payment_infos = payment_file.read()
 
 
 def get_biggest_image(update: Update, context: CallbackContext, path_to_save: str):
@@ -33,21 +36,36 @@ def start(update: Update, _):
     )
 
 
-def uaficy(update: Update, context: CallbackContext):
+def get_overlay_path(update: Update):
     chat_id = update.effective_chat.id
-    logging.info(update.effective_chat)
     overlay_path = f"./resources/overlay{chat_id}.jpg"
     output_path = f"./resources/output{chat_id}.jpg"
+    return overlay_path, output_path, chat_id
+
+
+def uaficy_doc(update: Update, context: CallbackContext):
+    overlay_path, output_path, chat_id = get_overlay_path(update)
+    context.bot.get_file(update.message.document).download(overlay_path)
+    if imghdr.what(overlay_path) is None:
+        update.message.reply_text("File type is not supported!")
+    uaficy(update, context, overlay_path, output_path, chat_id)
+
+
+def uaficy_img(update: Update, context: CallbackContext):
+    logging.info(update.effective_chat)
+    overlay_path, output_path, chat_id = get_overlay_path(update)
+    get_biggest_image(update, context, overlay_path)
+
+
+def uaficy(update, context, overlay_path, output_path, chat_id):
     try:
-        get_biggest_image(update, context, overlay_path)
         image_util.add_background(ukrainian_flag,
                                   overlay_path,
                                   output_path)
         context.bot.send_document(chat_id=chat_id, document=open(output_path, 'rb'))
 
-        with open(payment_infos, 'r') as payment_file:
-            update.message.reply_text("It will help also if you will support Ukraine!")
-            update.message.reply_text(payment_file.read())
+        update.message.reply_text("It will help also if you will support Ukraine!")
+        update.message.reply_text(payment_infos)
     finally:
         pathlib.Path(overlay_path).unlink(missing_ok=True)
         pathlib.Path(output_path).unlink(missing_ok=True)
@@ -64,7 +82,8 @@ with open('./key.telegram', 'rt') as key_file:
     updater = Updater(key, use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler('start', start))
-    updater.dispatcher.add_handler(MessageHandler(Filters.photo, uaficy))
+    updater.dispatcher.add_handler(MessageHandler(Filters.photo, uaficy_img))
+    updater.dispatcher.add_handler(MessageHandler(Filters.document, uaficy_doc))
     updater.dispatcher.add_handler(MessageHandler(Filters.text, unknown))
     updater.dispatcher.add_handler(MessageHandler(
         Filters.command, unknown))  # Filters out unknown commands
