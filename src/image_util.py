@@ -1,6 +1,9 @@
 from PIL import Image
 from PIL import ImageDraw
 import numpy as np
+from typing import Tuple, Final
+
+border: Final[Tuple] = (50, 50)
 
 
 def crop_center(pil_img, crop_width, crop_height):
@@ -18,7 +21,7 @@ def crop_max_square(pil_img):
 def create_circle_image(overlay_path):
     # Open the input image as numpy array, convert to RGB
     img = crop_max_square(Image.open(overlay_path).convert("RGB"))
-    npImage = np.array(img)
+    np_image = np.array(img)
     h, w = img.size
 
     # Create same size alpha layer with circle
@@ -27,20 +30,21 @@ def create_circle_image(overlay_path):
     draw.pieslice([0, 0, h, w], 0, 360, fill=255)
 
     # Convert alpha Image to numpy array
-    npAlpha = np.array(alpha)
+    np_alpha = np.array(alpha)
 
     # Add alpha layer to RGB
-    npImage = np.dstack((npImage, npAlpha))
+    np_image = np.dstack((np_image, np_alpha))
 
-    res = Image.fromarray(npImage)
+    res = Image.fromarray(np_image)
     # Save with alpha
     return res
 
 
 def add_background(background_path, overlay_path, output_path):
     background = Image.open(background_path).convert("RGBA")
-    overlay = create_circle_image(overlay_path).resize(np.subtract(background.size, (50, 50)))
+    overlay = create_circle_image(overlay_path).resize(np.subtract(background.size, border))
     overlay.save(overlay_path, "PNG")
 
-    background.paste(overlay, (25, 25), overlay)
+    margin_to_overlay = tuple(int(i / 2) for i in border)
+    background.paste(overlay, margin_to_overlay, overlay)
     background.save(output_path, "PNG")
