@@ -12,13 +12,10 @@ import image_util
 import imghdr
 
 ukrainian_flag: Final[str] = "./resources/ukrainian_flag.png"
-payment_infos: Final[str] = "./resources/payment.txt"
 
 logging.basicConfig(filename="bot.log",
-                    level=logging.INFO)
-
-with open(payment_infos, 'r') as payment_file:
-    payment_infos = payment_file.read()
+                    level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
 def get_biggest_image(update: Update, context: CallbackContext, path_to_save: str):
@@ -28,7 +25,8 @@ def get_biggest_image(update: Update, context: CallbackContext, path_to_save: st
 
 def start(update: Update, _):
     update.message.reply_text(
-        "Send your image and the bot will add ukrainian flag to it.\n" +
+        "Send your image and the bot will add ukrainian flag to it."
+        "Only square in the middle will be used. You can crop your picture before sending using the app.\n"
         "Надішліть своє зображення і бот додасть до нього український прапор."
     )
 
@@ -49,21 +47,27 @@ def uaficy_doc(update: Update, context: CallbackContext):
 
 
 def uaficy_img(update: Update, context: CallbackContext):
-    logging.info(update.effective_chat)
+    overlay_path, output_path, chat_id = get_overlay_path(update)
+    get_biggest_image(update, context, overlay_path)
+    uaficy(update, context, overlay_path, output_path, chat_id)
+
+
+def uaficy_profile(update: Update, context: CallbackContext):
     overlay_path, output_path, chat_id = get_overlay_path(update)
     get_biggest_image(update, context, overlay_path)
     uaficy(update, context, overlay_path, output_path, chat_id)
 
 
 def uaficy(update, context, overlay_path, output_path, chat_id):
+    logging.info(update.effective_chat)
     try:
         image_util.add_background(ukrainian_flag,
                                   overlay_path,
                                   output_path)
-        context.bot.send_document(chat_id=chat_id, document=open(output_path, 'rb'))
+        context.bot.send_photo(chat_id, open(output_path, 'rb'))
 
         update.message.reply_text("It will help also if you will support Ukraine!")
-        update.message.reply_text(payment_infos)
+        update.message.reply_text("https://war.ukraine.ua")
     finally:
         pathlib.Path(overlay_path).unlink(missing_ok=True)
         pathlib.Path(output_path).unlink(missing_ok=True)
@@ -87,3 +91,4 @@ with open('./key.telegram', 'rt') as key_file:
         Filters.command, unknown))  # Filters out unknown commands
 
     updater.start_polling()
+    updater.idle()
