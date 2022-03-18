@@ -25,9 +25,8 @@ def get_biggest_image(update: Update, context: CallbackContext, path_to_save: st
 
 def start(update: Update, _):
     update.message.reply_text(
-        "Send your image and the bot will add ukrainian flag to it."
+        "Send your image and the bot will add ukrainian flag to it. "
         "Only square in the middle will be used. You can crop your picture before sending using the app.\n"
-        "Надішліть своє зображення і бот додасть до нього український прапор."
     )
 
 
@@ -66,7 +65,7 @@ def uaficy(update, context, overlay_path, output_path, chat_id):
                                   output_path)
         context.bot.send_photo(chat_id, open(output_path, 'rb'))
 
-        update.message.reply_text("It will help also if you will support Ukraine!")
+        update.message.reply_text("Support Ukraine, every cent counts!")
         update.message.reply_text("https://war.ukraine.ua")
     finally:
         pathlib.Path(overlay_path).unlink(missing_ok=True)
@@ -75,8 +74,7 @@ def uaficy(update, context, overlay_path, output_path, chat_id):
 
 def unknown(update: Update, _):
     update.message.reply_text(
-        f"Sorry {update.message.text} is not a valid command.\n"
-        f"На жаль, {update.message.text} недійсна команда")
+        f"Sorry {update.message.text} is not a valid command.\n")
 
 
 with open('./key.telegram', 'rt') as key_file:
