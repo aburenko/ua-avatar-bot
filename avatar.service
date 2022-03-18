@@ -1,0 +1,15 @@
+[Unit]
+Description=UA avatar bot
+After=network.target
+StartLimitIntervalSec=5
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=centos
+WorkingDirectory=~/ua-avatar-bot
+ExecStart=/usr/bin/python3 src/main.py
+
+[Install]
+WantedBy=multi-user.target
