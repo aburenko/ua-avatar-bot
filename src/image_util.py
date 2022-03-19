@@ -3,7 +3,7 @@ from PIL import ImageDraw
 import numpy as np
 from typing import Tuple, Final
 
-border: Final[Tuple] = (50, 50)
+border: Final[Tuple] = (60, 60)
 
 
 def crop_center(pil_img, crop_width, crop_height):
