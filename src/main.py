@@ -12,6 +12,7 @@ import image_util
 import imghdr
 
 ukrainian_flag: Final[str] = "./resources/ukrainian_flag.png"
+user_log: Final[str] = "./users.log"
 
 logging.basicConfig(filename="bot.log",
                     level=logging.INFO,
@@ -58,7 +59,12 @@ def uaficy_profile(update: Update, context: CallbackContext):
 
 
 def uaficy(update, context, overlay_path, output_path, chat_id):
-    logging.info(update.effective_chat)
+    with open(user_log, 'a') as user_file:
+        try:
+            user_file.write(str(update.effective_chat) + "\n")
+        except Exception as e:
+            user_file.write("Error writing to user file\n", e)
+
     try:
         image_util.add_background(ukrainian_flag,
                                   overlay_path,

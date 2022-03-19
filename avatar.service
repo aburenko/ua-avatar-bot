@@ -6,7 +6,7 @@ StartLimitIntervalSec=5
 [Service]
 Type=simple
 Restart=always
-RestartSec=900
+RestartSec=10
 Group=pi
 User=pi
 WorkingDirectory=/home/pi/ua-avatar-bot
