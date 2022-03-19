@@ -6,10 +6,11 @@ StartLimitIntervalSec=5
 [Service]
 Type=simple
 Restart=always
-RestartSec=1
-User=centos
-WorkingDirectory=~/ua-avatar-bot
-ExecStart=/usr/bin/python3 src/main.py
+RestartSec=900
+Group=pi
+User=pi
+WorkingDirectory=/home/pi/ua-avatar-bot
+ExecStart=python src/main.py
 
 [Install]
 WantedBy=multi-user.target
